@@ -1,25 +1,62 @@
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react'
 import './App.css';
+import {connect} from "react-redux";
+import {getStatuses, getCards} from "./redux/actions";
+import 'bootstrap/dist/css/bootstrap.css'
+import {Button, Container, Row} from "reactstrap";
+import Column from "./Column";
+import CreateModal from "./CreateTaskModal";
+import CreateStatusModal from "./CreateStatusModal";
+import ColumnNull from "./ColumnNull";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+function App(props) {
+
+    useEffect( () => {
+        props.getStatuses()
+    }, []);
+
+    useEffect( () => {
+        props.getCards()
+    }, []);
+
+    const [openCreateModal, setOpenCreateModal] = useState(false)
+    const [openCreateStatusModal, setOpenCreateStatusModal] = useState(false)
+
+
+    return (
+        <div>
+            <h1> Kanban (axios, redux, thunk, bootstrap) </h1>
+            <hr />
+            <Container>
+                <Button onClick={() => setOpenCreateModal(!openCreateModal)} outline color="info">Create Card</Button>
+                {openCreateModal &&
+                <CreateModal
+                    openCreateModal={openCreateModal}
+                    setOpenCreateModal={setOpenCreateModal}
+                />}
+                <Button onClick={() => setOpenCreateStatusModal(!openCreateStatusModal)} className="float-sm-right" outline color="info">Create New Status</Button>
+                {openCreateStatusModal &&
+                <CreateStatusModal
+                    openCreateStatusModal={openCreateStatusModal}
+                    setOpenCreateStatusModal={setOpenCreateStatusModal}
+                />}
+                <hr />
+                <Row>
+                    {props.statuses.map(el => <Column status={el} key={el._id}/>)}
+                    {/*<ColumnNull />*/}
+                </Row>
+            </Container>
+        </div>
+    );
 }
 
-export default App;
+const mapStateToProps = (state) => ({
+    statuses: state.statuses,
+})
+
+const mapDispatchToProps = (dispatch) => ({
+    getStatuses: () => dispatch(getStatuses()),
+    getCards: () => dispatch(getCards())
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
